@@ -192,7 +192,13 @@
         <div class="hero-3d-card rounded-3xl p-5 text-white">
           <div class="flex items-center justify-between relative z-10">
             <div>
-              <span class="text-xs uppercase tracking-wider text-indigo-100/80 font-semibold">Total Saldo Bersih</span>
+              <div class="flex items-center gap-2">
+                <span class="text-xs uppercase tracking-wider text-indigo-100/85 font-semibold">Total Saldo Bersih</span>
+                <button onclick="openInitialBalanceModal()" title="Atur Saldo Awal Dompet" class="px-2 py-0.5 rounded-lg bg-white/20 hover:bg-white/30 text-[10px] font-bold text-white backdrop-blur-md transition flex items-center gap-1">
+                  <i data-lucide="sliders-horizontal" class="w-3 h-3"></i>
+                  Saldo Awal
+                </button>
+              </div>
               <h2 id="totalBalanceDisplay" class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mt-1">Rp 0</h2>
             </div>
             <div class="px-3 py-1.5 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 text-right">
@@ -260,7 +266,7 @@
 
           <!-- Dynamic AI Insight Messages -->
           <div id="aiInsightsList" class="space-y-2.5 text-xs leading-relaxed">
-            <!-- Populated by JS -->
+            <!-- Populated strictly from real transactions -->
           </div>
 
           <!-- 50/30/20 Allocation Rule Mini Bar -->
@@ -441,22 +447,16 @@
               Batas Anggaran Bulanan
             </h3>
             <button onclick="openBudgetModal()" class="px-3 py-1.5 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:bg-indigo-500 hover:text-white transition">
-              + Atur Limit
-            </button>
-          </div>
-
-          <div id="budgetListContainer" class="space-y-3.5">
-            <!-- Populated by JS -->
-          </div>
-        </div>
-
-        <!-- Savings Goals with Time-to-Reach Simulation -->
+        <!-- Savings Goals (Real Wallet Deposit & Withdrawal) -->
         <div class="glass-card rounded-3xl p-5 space-y-4">
           <div class="flex items-center justify-between">
-            <h3 class="font-display font-bold text-sm flex items-center gap-2">
-              <i data-lucide="target" class="w-4 h-4 text-emerald-500"></i>
-              Target Tabungan (Goals)
-            </h3>
+            <div>
+              <h3 class="font-display font-bold text-sm flex items-center gap-2">
+                <i data-lucide="target" class="w-4 h-4 text-emerald-500"></i>
+                Target Tabungan Nyata
+              </h3>
+              <p class="text-[10px] text-slate-500 dark:text-slate-400">Dana disisihkan langsung dari saldo dompet</p>
+            </div>
             <button onclick="openGoalModal()" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-500 hover:text-white transition">
               + Target Baru
             </button>
@@ -501,6 +501,12 @@
               <option value="E-Wallet">📱 E-Wallet</option>
             </select>
           </div>
+          <div class="grid grid-cols-2 gap-2">
+            <select id="historyCategoryFilter" onchange="renderHistoryList()" class="px-3 py-2 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 text-xs font-medium">
+              <option value="all">Semua Kategori</option>
+            </select>
+            <input type="month" id="historyMonthFilter" onchange="renderHistoryList()" class="px-3 py-2 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 text-xs font-medium" />
+          </div>
         </div>
 
         <!-- Full History List -->
@@ -543,9 +549,9 @@
               <input type="file" accept=".json" onchange="importBackupJSON(event)" class="hidden" />
             </label>
 
-            <button onclick="confirmResetDemoData()" class="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300 font-semibold text-xs flex items-center justify-center gap-2 hover:bg-rose-500 hover:text-white transition">
-              <i data-lucide="refresh-ccw" class="w-4 h-4"></i>
-              Reset Data Demo
+            <button onclick="confirmResetAllData()" class="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300 font-semibold text-xs flex items-center justify-center gap-2 hover:bg-rose-500 hover:text-white transition">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+              Hapus Semua Data (Reset Rp 0)
             </button>
           </div>
         </div>
@@ -638,55 +644,7 @@
         </div>
         <input type="text" id="editTxTitle" required placeholder="Judul transaksi" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" />
         <input type="text" inputmode="numeric" id="editTxAmount" required oninput="formatCurrencyInput(this)" placeholder="Nominal" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-base" />
-        <div class="grid grid-cols-2 gap-2">
-          <select id="editTxCategory" class="px-3 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs"></select>
-          <input type="date" id="editTxDate" required class="px-3 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs" />
-        </div>
-        <input type="text" id="editTxNote" placeholder="Catatan" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs" />
-        <button type="submit" class="w-full py-3 rounded-2xl bg-indigo-600 text-white font-bold text-sm">Simpan Perubahan</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- 2. Elegant Delete Confirmation Modal -->
-  <div id="confirmDeleteModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="glass-card w-full max-w-sm rounded-3xl p-6 text-center space-y-4">
-      <div class="w-12 h-12 rounded-2xl bg-rose-500/15 text-rose-500 mx-auto flex items-center justify-center">
-        <i data-lucide="trash-2" class="w-6 h-6"></i>
-      </div>
-      <div>
-        <h3 class="font-display font-bold text-base" id="confirmModalTitle">Hapus Transaksi?</h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="confirmModalDesc">Tindakan ini tidak dapat dibatalkan dan saldo akan disesuaikan otomatis.</p>
-      </div>
-      <div class="grid grid-cols-2 gap-2.5 pt-2">
-        <button onclick="closeModal('confirmDeleteModal')" class="py-2.5 rounded-2xl bg-slate-200 dark:bg-slate-800 text-xs font-bold">Batal</button>
-        <button id="confirmModalActionBtn" class="py-2.5 rounded-2xl bg-rose-600 text-white text-xs font-bold shadow-lg shadow-rose-500/30">Ya, Hapus</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3. Set Monthly Budget Modal -->
-  <div id="budgetModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="glass-card w-full max-w-sm rounded-3xl p-5 space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="font-display font-bold text-base">Atur Batas Anggaran</h3>
-        <button onclick="closeModal('budgetModal')" class="p-1.5 rounded-xl bg-slate-200/60 dark:bg-slate-800"><i data-lucide="x" class="w-4 h-4"></i></button>
-      </div>
-      <form id="budgetForm" class="space-y-3">
-        <div>
-          <label class="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Kategori Pengeluaran</label>
-          <select id="budgetCategorySelect" class="w-full px-3 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-semibold"></select>
-        </div>
-        <div>
-          <label class="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Batas Maksimal per Bulan (Rp)</label>
-          <input type="text" inputmode="numeric" id="budgetLimitInput" required oninput="formatCurrencyInput(this)" placeholder="Contoh: 1.500.000" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-sm" />
-        </div>
-        <button type="submit" class="w-full py-3 rounded-2xl bg-indigo-600 text-white font-bold text-xs">Simpan Anggaran</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- 4. Add / Top-up Savings Goal Modal -->
+  <!-- 4. Add Savings Goal Modal (Real Goal Without Simulation) -->
   <div id="goalModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="glass-card w-full max-w-sm rounded-3xl p-5 space-y-4">
       <div class="flex items-center justify-between">
@@ -694,26 +652,74 @@
         <button onclick="closeModal('goalModal')" class="p-1.5 rounded-xl bg-slate-200/60 dark:bg-slate-800"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
       <form id="goalForm" class="space-y-3">
-        <input type="text" id="goalNameInput" required placeholder="Nama Target (misal: Dana Darurat, Laptop)" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs" />
-        <input type="text" inputmode="numeric" id="goalTargetInput" required oninput="formatCurrencyInput(this)" placeholder="Target Dana (Rp)" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-sm" />
-        <input type="text" inputmode="numeric" id="goalCurrentInput" oninput="formatCurrencyInput(this)" placeholder="Saldo Terkumpul Saat Ini (Rp)" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" />
-        <input type="text" inputmode="numeric" id="goalMonthlyInput" required oninput="formatCurrencyInput(this)" placeholder="Rencana Nabung per Bulan (Rp)" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" />
-        <button type="submit" class="w-full py-3 rounded-2xl bg-emerald-600 text-white font-bold text-xs">Buat Target Tabungan</button>
+        <div>
+          <label class="text-[11px] text-slate-500 dark:text-slate-400 mb-1 block">Nama Target Tabungan</label>
+          <input type="text" id="goalNameInput" required placeholder="Misal: Dana Darurat, Beli Laptop" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs" />
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-500 dark:text-slate-400 mb-1 block">Nominal Target (Rp)</label>
+          <input type="text" inputmode="numeric" id="goalTargetInput" required oninput="formatCurrencyInput(this)" placeholder="0" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-sm" />
+        </div>
+        <button type="submit" class="w-full py-3 rounded-2xl bg-emerald-600 text-white font-bold text-xs">Simpan Target Tabungan</button>
       </form>
     </div>
   </div>
 
-  <!-- 5. Top-up Goal Modal -->
+  <!-- 5. Real Deposit / Withdraw Goal Modal -->
   <div id="topupGoalModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="glass-card w-full max-w-sm rounded-3xl p-5 space-y-4">
       <div class="flex items-center justify-between">
-        <h3 class="font-display font-bold text-base" id="topupGoalTitle">Tambah Tabungan</h3>
+        <h3 class="font-display font-bold text-base" id="topupGoalTitle">Kelola Dana Target</h3>
         <button onclick="closeModal('topupGoalModal')" class="p-1.5 rounded-xl bg-slate-200/60 dark:bg-slate-800"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
       <form id="topupGoalForm" class="space-y-3">
         <input type="hidden" id="topupGoalId" />
-        <input type="text" inputmode="numeric" id="topupAmountInput" required oninput="formatCurrencyInput(this)" placeholder="Nominal Setoran (Rp)" class="w-full px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-base" />
-        <button type="submit" class="w-full py-3 rounded-2xl bg-emerald-600 text-white font-bold text-xs">Tambahkan ke Target</button>
+        <div class="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-slate-200/80 dark:bg-slate-800">
+          <button type="button" id="goalActionDepositBtn" onclick="setGoalAction('deposit')" class="py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white transition">Setor Dana</button>
+          <button type="button" id="goalActionWithdrawBtn" onclick="setGoalAction('withdraw')" class="py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 transition">Tarik Dana</button>
+        </div>
+        <input type="hidden" id="goalActionType" value="deposit" />
+        <div>
+          <label class="text-[11px] text-slate-500 dark:text-slate-400 mb-1 block" id="goalWalletLabel">Sumber Dompet</label>
+          <select id="goalWalletSelect" class="w-full px-3 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+            <option value="Tunai">💵 Tunai</option>
+            <option value="Rekening Bank">🏦 Rekening Bank</option>
+            <option value="E-Wallet">📱 E-Wallet</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-500 dark:text-slate-400 mb-1 block">Nominal (Rp)</label>
+          <input type="text" inputmode="numeric" id="topupAmountInput" required oninput="formatCurrencyInput(this)" placeholder="0" class="w-full px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-base" />
+        </div>
+        <button type="submit" id="goalActionSubmitBtn" class="w-full py-3 rounded-2xl bg-emerald-600 text-white font-bold text-xs">Konfirmasi Setoran</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5B. Initial Wallet Balances Modal -->
+  <div id="initialBalanceModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glass-card w-full max-w-sm rounded-3xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-display font-bold text-base">Atur Saldo Awal Dompet</h3>
+        <button onclick="closeModal('initialBalanceModal')" class="p-1.5 rounded-xl bg-slate-200/60 dark:bg-slate-800"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+        Masukkan saldo awal riil yang Anda miliki saat mulai mencatat. Total saldo akan dijumlahkan dengan seluruh transaksi Anda.
+      </p>
+      <form id="initialBalanceForm" class="space-y-3">
+        <div>
+          <label class="text-xs font-semibold mb-1 block">💵 Saldo Awal Tunai (Rp)</label>
+          <input type="text" inputmode="numeric" id="initCashInput" oninput="formatCurrencyInput(this)" placeholder="0" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-sm" />
+        </div>
+        <div>
+          <label class="text-xs font-semibold mb-1 block">🏦 Saldo Awal Rekening Bank (Rp)</label>
+          <input type="text" inputmode="numeric" id="initBankInput" oninput="formatCurrencyInput(this)" placeholder="0" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-sm" />
+        </div>
+        <div>
+          <label class="text-xs font-semibold mb-1 block">📱 Saldo Awal E-Wallet (Rp)</label>
+          <input type="text" inputmode="numeric" id="initEwalletInput" oninput="formatCurrencyInput(this)" placeholder="0" class="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-sm" />
+        </div>
+        <button type="submit" class="w-full py-3 rounded-2xl bg-indigo-600 text-white font-bold text-xs">Simpan Saldo Awal</button>
       </form>
     </div>
   </div>
@@ -801,41 +807,34 @@
         const d = new Date(today);
         d.setDate(d.getDate() - daysAgo);
         return d.toISOString().split('T')[0];
-      };
+    // ---------- 2. STATE & STORAGE (100% CLEAN PRODUCTION - ZERO DUMMY DATA) ----------
+    const STORAGE_KEY = 'dompet_cerdas_prod_v2';
+    let appState = {
+      initialBalances: {
+        'Tunai': 0,
+        'Rekening Bank': 0,
+        'E-Wallet': 0
+      },
+      transactions: [],
+      budgets: {},
+      goals: [],
+      theme: 'dark'
+    };
 
+    let doughnutChartInstance = null;
+    let barChartInstance = null;
+
+    function getCleanEmptyState() {
       return {
-        theme: 'dark',
-        budgets: {
-          'Makan & Minum': 1800000,
-          'Transportasi': 700000,
-          'Hiburan & Nongkrong': 600000,
-          'Tagihan & Utilitas': 1200000
+        initialBalances: {
+          'Tunai': 0,
+          'Rekening Bank': 0,
+          'E-Wallet': 0
         },
-        goals: [
-          {
-            id: 'goal-1',
-            name: 'Dana Darurat 6 Bulan',
-            target: 15000000,
-            current: 6500000,
-            monthly: 1500000
-          },
-          {
-            id: 'goal-2',
-            name: 'Upgrade Laptop Kerja',
-            target: 12000000,
-            current: 4000000,
-            monthly: 1000000
-          }
-        ],
-        transactions: [
-          { id: 'tx-1', type: 'income', title: 'Gaji Bulanan', amount: 8500000, category: 'Gaji', wallet: 'Rekening Bank', date: fmt(12), note: 'Gaji utama bulan ini' },
-          { id: 'tx-2', type: 'income', title: 'Project Freelance Web', amount: 1750000, category: 'Usaha & Freelance', wallet: 'E-Wallet', date: fmt(7), note: 'Landing page klien' },
-          { id: 'tx-3', type: 'expense', title: 'Token Listrik & WiFi', amount: 650000, category: 'Tagihan & Utilitas', wallet: 'Rekening Bank', date: fmt(10), note: 'Tagihan rutin rumah' },
-          { id: 'tx-4', type: 'expense', title: 'Belanja Bulanan Supermarket', amount: 820000, category: 'Belanja Harian', wallet: 'Rekening Bank', date: fmt(8), note: 'Sembako & kebutuhan dapur' },
-          { id: 'tx-5', type: 'expense', title: 'Isi Bensin Pertamax', amount: 150000, category: 'Transportasi', wallet: 'E-Wallet', date: fmt(5), note: 'Full tank' },
-          { id: 'tx-6', type: 'expense', title: 'Kopi Susu & Makan Siang', amount: 68000, category: 'Makan & Minum', wallet: 'E-Wallet', date: fmt(2), note: 'Kopi kenangan + ayam geprek' },
-          { id: 'tx-7', type: 'expense', title: 'Nonton Bioskop Akhir Pekan', amount: 185000, category: 'Hiburan & Nongkrong', wallet: 'Tunai', date: fmt(1), note: 'Tiket & popcorn' }
-        ]
+        transactions: [],
+        budgets: {},
+        goals: [],
+        theme: appState.theme || 'dark'
       };
     }
 
@@ -843,14 +842,21 @@
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
-          appState = JSON.parse(raw);
+          const parsed = JSON.parse(raw);
+          appState = {
+            initialBalances: parsed.initialBalances || { 'Tunai': 0, 'Rekening Bank': 0, 'E-Wallet': 0 },
+            transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [],
+            budgets: parsed.budgets || {},
+            goals: Array.isArray(parsed.goals) ? parsed.goals : [],
+            theme: parsed.theme || 'dark'
+          };
         } else {
-          appState = getSeedData();
+          appState = getCleanEmptyState();
           saveState();
         }
       } catch (e) {
         console.error('Gagal membaca LocalStorage:', e);
-        appState = getSeedData();
+        appState = getCleanEmptyState();
       }
     }
 
@@ -1077,17 +1083,22 @@
     }
 
     function renderDashboard() {
-      // Calculate Total Balances & Per Wallet
-      let totalBalance = 0;
-      const wallets = { 'Tunai': 0, 'Rekening Bank': 0, 'E-Wallet': 0 };
+      // Calculate Real Total Balances & Per Wallet starting from user's Initial Balances
+      const init = appState.initialBalances || { 'Tunai': 0, 'Rekening Bank': 0, 'E-Wallet': 0 };
+      const wallets = {
+        'Tunai': Number(init['Tunai']) || 0,
+        'Rekening Bank': Number(init['Rekening Bank']) || 0,
+        'E-Wallet': Number(init['E-Wallet']) || 0
+      };
 
       appState.transactions.forEach(tx => {
         const delta = tx.type === 'income' ? tx.amount : -tx.amount;
-        totalBalance += delta;
         if (wallets.hasOwnProperty(tx.wallet)) {
           wallets[tx.wallet] += delta;
         }
       });
+
+      const totalBalance = wallets['Tunai'] + wallets['Rekening Bank'] + wallets['E-Wallet'];
 
       document.getElementById('totalBalanceDisplay').textContent = formatRupiah(totalBalance);
       document.getElementById('walletCashDisplay').textContent = formatRupiah(wallets['Tunai']);
@@ -1117,12 +1128,36 @@
         .slice(0, 5);
 
       if (recent.length === 0) {
-        recentContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada transaksi. Mulai catat di atas!</p>`;
+        recentContainer.innerHTML = `<div class="text-center py-6 space-y-1">
+          <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Belum ada transaksi tercatat</p>
+          <p class="text-[11px] text-slate-400">Gunakan formulir di atas untuk mencatat pemasukan/pengeluaran pertama Anda.</p>
+        </div>`;
       } else {
         recentContainer.innerHTML = recent.map(tx => createTransactionRowHTML(tx, false)).join('');
       }
       lucide.createIcons();
     }
+
+    function openInitialBalanceModal() {
+      const init = appState.initialBalances || { 'Tunai': 0, 'Rekening Bank': 0, 'E-Wallet': 0 };
+      document.getElementById('initCashInput').value = init['Tunai'] > 0 ? init['Tunai'].toLocaleString('id-ID') : '';
+      document.getElementById('initBankInput').value = init['Rekening Bank'] > 0 ? init['Rekening Bank'].toLocaleString('id-ID') : '';
+      document.getElementById('initEwalletInput').value = init['E-Wallet'] > 0 ? init['E-Wallet'].toLocaleString('id-ID') : '';
+      openModal('initialBalanceModal');
+    }
+
+    document.getElementById('initialBalanceForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      appState.initialBalances = {
+        'Tunai': parseFormattedNumber(document.getElementById('initCashInput').value),
+        'Rekening Bank': parseFormattedNumber(document.getElementById('initBankInput').value),
+        'E-Wallet': parseFormattedNumber(document.getElementById('initEwalletInput').value)
+      };
+      saveState();
+      closeModal('initialBalanceModal');
+      refreshAllViews();
+      showToast('Saldo awal dompet berhasil diperbarui!');
+    });
 
     function runSmartFinancialAnalysis(monthTxs, income, expense, savingsRate) {
       let needsTotal = 0;
@@ -1136,9 +1171,10 @@
         catTotals[tx.category] = (catTotals[tx.category] || 0) + tx.amount;
       });
 
+      const hasData = income > 0 || expense > 0;
       const base = income > 0 ? income : (expense > 0 ? expense : 1);
-      const needsPct = Math.min(100, Math.round((needsTotal / base) * 100));
-      const wantsPct = Math.min(100, Math.round((wantsTotal / base) * 100));
+      const needsPct = hasData ? Math.min(100, Math.round((needsTotal / base) * 100)) : 0;
+      const wantsPct = hasData ? Math.min(100, Math.round((wantsTotal / base) * 100)) : 0;
       const savPct = income > 0 ? Math.max(0, 100 - needsPct - wantsPct) : 0;
 
       document.getElementById('barNeeds').style.width = `${needsPct}%`;
@@ -1149,38 +1185,41 @@
       document.getElementById('labelWants').textContent = `Keinginan: ${wantsPct}% (Ideal ≤30%)`;
       document.getElementById('labelSavings').textContent = `Tabungan: ${savPct}% (Ideal ≥20%)`;
 
-      // Calculate Health Score (0-100)
-      let score = 70;
-      if (savingsRate >= 20) score += 20;
-      else if (savingsRate >= 10) score += 10;
-      else if (income > 0 && expense > income) score -= 25;
-
-      if (wantsPct <= 30) score += 10;
-      else score -= 10;
-
-      score = Math.max(15, Math.min(99, score));
       const scoreBadge = document.getElementById('healthScoreBadge');
-      scoreBadge.textContent = `${score}/100`;
-      scoreBadge.className = score >= 80
-        ? 'font-display font-extrabold text-sm text-emerald-500'
-        : score >= 55
-        ? 'font-display font-extrabold text-sm text-amber-500'
-        : 'font-display font-extrabold text-sm text-rose-500';
+      if (!hasData) {
+        scoreBadge.textContent = '--/100';
+        scoreBadge.className = 'font-display font-extrabold text-sm text-slate-400';
+      } else {
+        let score = 70;
+        if (savingsRate >= 20) score += 20;
+        else if (savingsRate >= 10) score += 10;
+        else if (income > 0 && expense > income) score -= 25;
 
-      // Build Smart Insights
+        if (wantsPct <= 30) score += 10;
+        else score -= 10;
+
+        score = Math.max(15, Math.min(99, score));
+        scoreBadge.textContent = `${score}/100`;
+        scoreBadge.className = score >= 80
+          ? 'font-display font-extrabold text-sm text-emerald-500'
+          : score >= 55
+          ? 'font-display font-extrabold text-sm text-amber-500'
+          : 'font-display font-extrabold text-sm text-rose-500';
+      }
+
+      // Build Real Insights
       const insights = [];
-      if (income === 0 && expense === 0) {
-        insights.push(`<div class="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">💡 Mulai catat pemasukan dan pengeluaran bulan ini agar AI dapat menganalisis rasio kesehatan dompet Anda.</div>`);
+      if (!hasData) {
+        insights.push(`<div class="p-3 rounded-2xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">💡 Belum ada aktivitas keuangan bulan ini. Atur <strong>Saldo Awal</strong> di kartu atas atau catat transaksi pertama Anda untuk melihat evaluasi otomatis.</div>`);
       } else {
         if (savingsRate >= 20) {
-          insights.push(`<div class="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">✅ <strong>Luar Biasa!</strong> Rasio tabungan Anda <strong>${savingsRate}%</strong> (melampaui target ideal 20%). Pertahankan konsistensi ini!</div>`);
+          insights.push(`<div class="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">✅ <strong>Luar Biasa!</strong> Rasio tabungan bulan ini <strong>${savingsRate}%</strong> (melampaui target ideal 20%). Pertahankan konsistensi ini!</div>`);
         } else if (expense > income) {
           insights.push(`<div class="p-2.5 rounded-2xl bg-rose-500/15 text-rose-700 dark:text-rose-300">⚠️ <strong>Peringatan Defisit:</strong> Pengeluaran bulan ini lebih besar ${formatRupiah(expense - income)} dari pemasukan. Segera rem belanja non-esensial!</div>`);
         } else {
           insights.push(`<div class="p-2.5 rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-300">📊 <strong>Saran Optimasi:</strong> Rasio tabungan saat ini <strong>${savingsRate}%</strong>. Sisihkan minimal ${formatRupiah(Math.max(0, income * 0.2 - (income - expense)))} lagi untuk mencapai target 20%.</div>`);
         }
 
-        // Top Spending Category Warning
         const topCat = Object.entries(catTotals).sort((a, b) => b[1] - a[1])[0];
         if (topCat && expense > 0) {
           const share = Math.round((topCat[1] / expense) * 100);
@@ -1226,22 +1265,20 @@
                 </button>
                 <button onclick="promptDeleteTx('${tx.id}')" class="p-1.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition" title="Hapus">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                </button>
-              </div>
-            ` : ''}
-          </div>
-        </div>
-      `;
-    }
-
-    function escapeHTML(str) {
-      return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    function populateHistoryCategoryFilter() {
+      const sel = document.getElementById('historyCategoryFilter');
+      if (!sel) return;
+      const allCats = [...CATEGORIES.expense, ...CATEGORIES.income];
+      sel.innerHTML = `<option value="all">Semua Kategori</option>` +
+        allCats.map(c => `<option value="${c.id}">${c.icon} ${c.id}</option>`).join('');
     }
 
     function renderHistoryList() {
       const search = (document.getElementById('historySearchInput').value || '').toLowerCase();
       const typeFilter = document.getElementById('historyTypeFilter').value;
       const walletFilter = document.getElementById('historyWalletFilter').value;
+      const catFilter = document.getElementById('historyCategoryFilter').value;
+      const monthFilter = document.getElementById('historyMonthFilter').value;
 
       const filtered = appState.transactions
         .filter(tx => {
@@ -1250,13 +1287,15 @@
             (tx.note && tx.note.toLowerCase().includes(search));
           const matchType = typeFilter === 'all' || tx.type === typeFilter;
           const matchWallet = walletFilter === 'all' || tx.wallet === walletFilter;
-          return matchSearch && matchType && matchWallet;
+          const matchCat = catFilter === 'all' || tx.category === catFilter;
+          const matchMonth = !monthFilter || (tx.date && tx.date.startsWith(monthFilter));
+          return matchSearch && matchType && matchWallet && matchCat && matchMonth;
         })
         .sort((a, b) => new Date(b.date) - new Date(a.date));
 
       const container = document.getElementById('fullHistoryList');
       if (filtered.length === 0) {
-        container.innerHTML = `<div class="glass-card rounded-3xl p-8 text-center text-xs text-slate-400">Tidak ada transaksi yang cocok dengan filter pencarian.</div>`;
+        container.innerHTML = `<div class="glass-card rounded-3xl p-8 text-center text-xs text-slate-400">Belum ada riwayat transaksi yang sesuai.</div>`;
       } else {
         container.innerHTML = filtered.map(tx => createTransactionRowHTML(tx, true)).join('');
       }
@@ -1364,14 +1403,14 @@
       }
 
       // 2. Savings Goals
+      // 2. Real Savings Goals (Connected Directly to Real Wallets - Zero Simulation)
       const goalsContainer = document.getElementById('goalsListContainer');
       if (appState.goals.length === 0) {
-        goalsContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-3">Belum ada target tabungan. Buat target dana darurat atau impian Anda!</p>`;
+        goalsContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada target tabungan. Klik "+ Target Baru" untuk mulai menyisihkan dana nyata dari dompet Anda.</p>`;
       } else {
         goalsContainer.innerHTML = appState.goals.map(goal => {
           const pct = Math.min(100, Math.round((goal.current / (goal.target || 1)) * 100));
           const remaining = Math.max(0, goal.target - goal.current);
-          const monthsLeft = goal.monthly > 0 ? Math.ceil(remaining / goal.monthly) : 0;
 
           return `
             <div class="p-4 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 space-y-2.5">
@@ -1384,7 +1423,7 @@
                 </div>
                 <div class="flex items-center gap-1.5">
                   <button onclick="openTopupGoal('${goal.id}')" class="px-2.5 py-1 rounded-xl bg-emerald-500 text-white text-[11px] font-bold hover:bg-emerald-600 transition">
-                    + Nabung
+                    Setor / Tarik
                   </button>
                   <button onclick="deleteGoal('${goal.id}')" class="p-1.5 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
@@ -1397,7 +1436,7 @@
               </div>
 
               <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                <span>⏱️ Simulasi: ${remaining === 0 ? '<strong class="text-emerald-500">Target Tercapai! 🎉</strong>' : `<strong>~${monthsLeft} bulan lagi</strong> (${formatRupiah(goal.monthly)}/bln)`}</span>
+                <span>${remaining === 0 ? '<strong class="text-emerald-500">🎉 Target Tabungan Tercapai!</strong>' : `Kurang <strong>${formatRupiah(remaining)}</strong> lagi`}</span>
                 <span class="font-bold text-emerald-500">${pct}%</span>
               </div>
             </div>
@@ -1441,17 +1480,17 @@
       e.preventDefault();
       const name = document.getElementById('goalNameInput').value.trim();
       const target = parseFormattedNumber(document.getElementById('goalTargetInput').value);
-      const current = parseFormattedNumber(document.getElementById('goalCurrentInput').value);
-      const monthly = parseFormattedNumber(document.getElementById('goalMonthlyInput').value);
 
-      if (!name || target <= 0) return;
+      if (!name || target <= 0) {
+        showToast('Masukkan nama target dan nominal yang valid.', 'error');
+        return;
+      }
 
       appState.goals.push({
         id: 'goal-' + Date.now(),
         name,
         target,
-        current,
-        monthly
+        current: 0
       });
       saveState();
       closeModal('goalModal');
@@ -1459,27 +1498,84 @@
       showToast(`Target "${name}" berhasil dibuat!`);
     });
 
+    function setGoalAction(action) {
+      document.getElementById('goalActionType').value = action;
+      const depBtn = document.getElementById('goalActionDepositBtn');
+      const witBtn = document.getElementById('goalActionWithdrawBtn');
+      const label = document.getElementById('goalWalletLabel');
+      const subBtn = document.getElementById('goalActionSubmitBtn');
+
+      if (action === 'deposit') {
+        depBtn.className = 'py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white transition';
+        witBtn.className = 'py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 transition';
+        label.textContent = 'Ambil Dana dari Dompet';
+        subBtn.textContent = 'Konfirmasi Setoran Tabungan';
+        subBtn.className = 'w-full py-3 rounded-2xl bg-emerald-600 text-white font-bold text-xs';
+      } else {
+        witBtn.className = 'py-2 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition';
+        depBtn.className = 'py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 transition';
+        label.textContent = 'Kembalikan Dana ke Dompet';
+        subBtn.textContent = 'Konfirmasi Penarikan Tabungan';
+        subBtn.className = 'w-full py-3 rounded-2xl bg-amber-500 text-slate-950 font-bold text-xs';
+      }
+    }
+
     function openTopupGoal(goalId) {
       const goal = appState.goals.find(g => g.id === goalId);
       if (!goal) return;
       document.getElementById('topupGoalId').value = goal.id;
-      document.getElementById('topupGoalTitle').textContent = `Setor ke: ${goal.name}`;
+      document.getElementById('topupGoalTitle').textContent = `Tabungan: ${goal.name}`;
       document.getElementById('topupAmountInput').value = '';
+      setGoalAction('deposit');
       openModal('topupGoalModal');
     }
 
     document.getElementById('topupGoalForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const id = document.getElementById('topupGoalId').value;
+      const action = document.getElementById('goalActionType').value;
+      const wallet = document.getElementById('goalWalletSelect').value;
       const amount = parseFormattedNumber(document.getElementById('topupAmountInput').value);
       const goal = appState.goals.find(g => g.id === id);
       if (!goal || amount <= 0) return;
 
-      goal.current += amount;
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      if (action === 'deposit') {
+        goal.current += amount;
+        appState.transactions.unshift({
+          id: 'tx-' + Date.now(),
+          type: 'expense',
+          title: `Sisihkan Tabungan: ${goal.name}`,
+          amount,
+          category: 'Lainnya',
+          wallet,
+          date: todayStr,
+          note: 'Alokasi dana ke target tabungan'
+        });
+        showToast(`Berhasil menyisihkan ${formatRupiah(amount)} dari ${wallet}!`);
+      } else {
+        if (amount > goal.current) {
+          showToast('Nominal penarikan melebihi saldo tabungan terkumpul!', 'error');
+          return;
+        }
+        goal.current -= amount;
+        appState.transactions.unshift({
+          id: 'tx-' + Date.now(),
+          type: 'income',
+          title: `Pencairan Tabungan: ${goal.name}`,
+          amount,
+          category: 'Pemasukan Lain',
+          wallet,
+          date: todayStr,
+          note: 'Penarikan dana dari target tabungan'
+        });
+        showToast(`Berhasil mencairkan ${formatRupiah(amount)} ke ${wallet}!`);
+      }
+
       saveState();
       closeModal('topupGoalModal');
-      renderPlanningTab();
-      showToast(`Berhasil menambah ${formatRupiah(amount)} ke ${goal.name}!`);
+      refreshAllViews();
     });
 
     function deleteGoal(id) {
@@ -1705,17 +1801,17 @@
       event.target.value = '';
     }
 
-    function confirmResetDemoData() {
-      document.getElementById('confirmModalTitle').textContent = 'Reset ke Data Contoh?';
-      document.getElementById('confirmModalDesc').textContent = 'Semua data saat ini akan diganti dengan data contoh bawaan aplikasi.';
+    function confirmResetAllData() {
+      document.getElementById('confirmModalTitle').textContent = 'Hapus Semua Data & Reset ke Rp 0?';
+      document.getElementById('confirmModalDesc').textContent = 'Seluruh transaksi, saldo awal, anggaran, dan target tabungan akan dihapus permanen hingga kembali kosong (Rp 0).';
       const btn = document.getElementById('confirmModalActionBtn');
-      btn.textContent = 'Ya, Reset';
+      btn.textContent = 'Ya, Hapus Semua';
       btn.onclick = () => {
-        appState = getSeedData();
+        appState = getCleanEmptyState();
         saveState();
         closeModal('confirmDeleteModal');
         refreshAllViews();
-        showToast('Data demo berhasil dimuat ulang!');
+        showToast('Seluruh data berhasil dihapus. Aplikasi kembali bersih (Rp 0).');
       };
       openModal('confirmDeleteModal');
     }
@@ -1786,6 +1882,7 @@
       });
 
       populateCategorySelect('txCategory', 'expense');
+      populateHistoryCategoryFilter();
       refreshAllViews();
       lucide.createIcons();
     });
